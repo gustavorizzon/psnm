@@ -23,11 +23,10 @@ To get started with PowerShell Simple Node Manager, follow these steps:
 
 ## Commands
 
-| Command                         | Description                                                |
-| ------------------------------- | ---------------------------------------------------------- |
-| `psnm use <version>` (upcoming) | Switches to the specified version of Node.js.              |
-| `psnm ls`                       | Lists all installed versions of Node.js.                   |
-| `psnm ls-remote`                | Lists all available versions of Node.js.                   |
-| `psnm current` (upcoming)       | Displays the currently active version of Node.js.          |
-| `psnm install <version>`        | Installs the specified version of Node.js from your system |
-| `psnm remove <version>`         | Removes the specified version of Node.js from your system  |
+| Command                  | Description                                                |
+| ------------------------ | ---------------------------------------------------------- |
+| `psnm use <version>`     | Switches to the specified version of Node.js.              |
+| `psnm ls`                | Lists all installed versions of Node.js.                   |
+| `psnm ls-remote`         | Lists all available versions of Node.js.                   |
+| `psnm install <version>` | Installs the specified version of Node.js from your system |
+| `psnm remove <version>`  | Removes the specified version of Node.js from your system  |

@@ -11,6 +11,7 @@ if ($Command -eq "help" -or $Command -eq "--help" -or $Command -eq "-h") {
     Write-Host "  ls-remote    List available Node.js versions"
     Write-Host "  install      Install a specific Node.js version"
     Write-Host "  remove       Remove a specific Node.js version"
+    Write-Host "  use          Switch to a specific Node.js version"
     Write-Host "  help         Show this help message"
     exit
 }
@@ -44,3 +45,18 @@ if ($Command -eq "remove") {
     & "$PSScriptRoot\remove.ps1" $Version
     exit
 }
+
+if ($Command -eq "use") {
+    if (-not $Version) {
+        Write-Host "Error: Version parameter is required for use command"
+        Write-Host "Usage: psnm use <version>"
+        exit 1
+    }
+    & "$PSScriptRoot\use.ps1" $Version
+    exit
+}
+
+
+Write-Host "Error: Command '$Command' not found."
+Write-Host "Use 'psnm help' to see the list of available commands."
+exit 1
