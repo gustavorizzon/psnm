@@ -5,10 +5,18 @@ function Use-NodeVersion {
     )
 
     if (-not $Version) {
-        # TODO: check for current cd .node-version or .nvmrc files
-        Write-Host "Error: Version parameter is required for use command"
-        Write-Host "Usage: psnm use <version>"
-        return 1
+        $nodeVersionFile = Join-Path (Get-Location) ".node-version"
+        $nvmrcFile = Join-Path (Get-Location) ".nvmrc"
+
+        if (Test-Path $nodeVersionFile) {
+            $Version = (Get-Content $nodeVersionFile | Select-Object -First 1).Trim()
+        } elseif (Test-Path $nvmrcFile) {
+            $Version = (Get-Content $nvmrcFile | Select-Object -First 1).Trim()
+        } else {
+            Write-Host "Error: Version parameter is required for use command"
+            Write-Host "Usage: psnm use <version>"
+            return 1
+        }
     }
 
     if (-not $Version.StartsWith("v")) {
@@ -23,6 +31,7 @@ function Use-NodeVersion {
 
     if (-not $selectedVersion) {
         Write-Host "Error: No installed Node.js version matching $Version."
+        Write-Host "To install the missing version, run: psnm install $Version"
         return 1
     }
 
