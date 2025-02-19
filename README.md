@@ -1,13 +1,8 @@
 # PowerShell Simple Node Manager
 
-This tool is designed to simplify the management of Node.js versions on your system. With PowerShell Simple Node Manager, you can easily install, switch, and manage multiple versions of Node.js with just a few commands.
+This is a single-file tool designed to simplify the management of Node.js versions on your system, even in environments with very limited permissions. With PowerShell Simple Node Manager, you can easily install, switch, and manage multiple versions of Node.js with just a few commands, without requiring administrative access.
 
-## Table of Contents
-
-1. [Getting Started](#getting-started)
-2. [Commands](#commands)
-
-### Getting Started
+## Getting Started
 
 To get started with PowerShell Simple Node Manager, follow these steps:
 
@@ -22,7 +17,7 @@ To get started with PowerShell Simple Node Manager, follow these steps:
    ```powershell
    Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
    if (-not (Test-Path $profile)) { New-Item $profile -Force }
-   Add-Content -Path $profile -Value "Set-Alias psnm $HOME\.psnm\bin\psnm.ps1"
+   Add-Content -Path $profile -Value "Set-Alias psnm $HOME\.psnm\psnm.ps1"
    ```
 
 3. Restart your PowerShell session to apply the changes made to your profile.
