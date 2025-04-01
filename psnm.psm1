@@ -19,26 +19,6 @@ if (-not (Test-Path $NODE_INSTALL_PATH)) {
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 # COMMANDS FUNCTIONS
-function Set-DefaultNodeVersion {
-  param(
-    [Parameter(Position=1, Mandatory=$true)]
-    [string]$Version
-  )
-
-  if (-not $Version) {
-    throw "Version parameter is required. Usage: Set-DefaultNodeVersion <version>"
-  }
-
-  if (-not $Version.StartsWith("v")) {
-    $Version = "v$Version"
-  }
-
-  $CONFIG.defaultVersion = $Version
-  $CONFIG | ConvertTo-Json | Set-Content -Path $CONFIG_FILE -Force
-
-  return "Default Node.js version set to $Version"
-}
-
 function Install-NodeVersion {
   param(
     [Parameter(Position=1)]
@@ -101,6 +81,28 @@ function Install-NodeVersion {
   Rename-Item -Path $extractedFolderPath -NewName $renamedFolderPath -Force
 
   return "Node.js $Version has been installed successfully"
+}
+
+function Set-DefaultNodeVersion {
+  param(
+    [Parameter(Position=1, Mandatory=$true)]
+    [string]$Version
+  )
+
+  if (-not $Version) {
+    throw "Version parameter is required. Usage: Set-DefaultNodeVersion <version>"
+  }
+
+  if (-not $Version.StartsWith("v")) {
+    $Version = "v$Version"
+  }
+
+  Install-NodeVersion $Version
+
+  $CONFIG.defaultVersion = $Version
+  $CONFIG | ConvertTo-Json | Set-Content -Path $CONFIG_FILE -Force
+
+  return "Default Node.js version set to $Version"
 }
 
 function Uninstall-NodeVersion {
@@ -185,9 +187,7 @@ function Use-NodeVersion {
   }
 
   # Logic to switch to the specified Node.js version
-  $nodePath = Join-Path $NODE_INSTALL_PATH $Version
   $installedVersions = Get-ChildItem -Path $NODE_INSTALL_PATH | Where-Object { $_.Name -like "$Version*" }
-
   $selectedVersion = $installedVersions | Sort-Object { [version]($_.Name -replace 'v', '') } -Descending | Select-Object -First 1
 
   if (-not $selectedVersion) {
