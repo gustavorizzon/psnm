@@ -60,7 +60,7 @@ function Install-NodeVersion {
   $requestedVersions = $nodeVersions | Where-Object { $_.version -like "$Version*" }
 
   if (-not $requestedVersions) {
-    throw "Version $Version not found. To see available versions, run: List-AvailableNodeVersions"
+    throw "Version $Version not found. To see available versions, run: Get-AvailableNodeVersions"
   }
 
   # Get the maximum version from the filtered results
@@ -103,14 +103,14 @@ function Install-NodeVersion {
   return "Node.js $Version has been installed successfully"
 }
 
-function Remove-NodeVersion {
+function Uninstall-NodeVersion {
   param(
     [Parameter(Position=1)]
     [string]$Version
   )
 
   if (-not $Version) {
-    throw "Error: Version parameter is required. Usage: Remove-NodeVersion <version>"
+    throw "Version parameter is required. Usage: Uninstall-NodeVersion <version>"
   }
 
   if (-not $Version.StartsWith("v")) {
@@ -128,7 +128,7 @@ function Remove-NodeVersion {
   return "Node.js $Version has been removed successfully."
 }
 
-function List-InstalledNodeVersions {
+function Get-InstalledNodeVersions {
   if (-not (Test-Path $NODE_INSTALL_PATH)) {
     return "No Node.js versions installed"
   }
@@ -139,7 +139,7 @@ function List-InstalledNodeVersions {
   if ($installedVersions.Count -eq 0) {
     $output += "- No Node.js versions are currently installed.`n"
     $output += "- You can install a version using the command: Install-NodeVersion <version>`n"
-    $output += "- To see available versions, run: List-AvailableNodeVersions`n"
+    $output += "- To see available versions, run: Get-AvailableNodeVersions`n"
   } else {
     $output += ($installedVersions | ForEach-Object { $_ }) -join "`n"
   }
@@ -147,7 +147,7 @@ function List-InstalledNodeVersions {
   return $output
 }
 
-function List-AvailableNodeVersions {
+function Get-AvailableNodeVersions {
   $nodeDistUrl = "$NODE_BASE_URL/index.json"
   $nodeVersions = Invoke-RestMethod -Uri $nodeDistUrl
   $sortedVersions = $nodeVersions | Sort-Object { [version]($_.version -replace 'v') }
