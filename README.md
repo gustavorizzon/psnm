@@ -17,7 +17,7 @@ To get started with PowerShell Simple Node Manager, follow these steps:
    ```powershell
    Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
    if (-not (Test-Path $profile)) { New-Item $profile -Force }
-   Add-Content -Path $profile -Value "Set-Alias psnm $HOME\.psnm\psnm.ps1"
+   Add-Content -Path $profile -Value "Import-Module $HOME\.psnm\psnm.psm1"
    ```
 
 3. Restart your PowerShell session to apply the changes made to your profile.
@@ -31,3 +31,4 @@ To get started with PowerShell Simple Node Manager, follow these steps:
 | `psnm ls-remote`         | Lists all available versions of Node.js.                   |
 | `psnm install <version>` | Installs the specified version of Node.js from your system |
 | `psnm remove <version>`  | Removes the specified version of Node.js from your system  |
+| `psnm default <version>` | Sets or shows the default Node.js version                  |

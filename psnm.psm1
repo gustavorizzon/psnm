@@ -5,14 +5,14 @@ $NODE_INSTALL_PATH = Join-Path $PSNM_HOME "nodejs"
 $CONFIG_FILE = Join-Path $PSNM_HOME "config.json"
 
 # SETUP
-$CONFIG = @{}
+if (-not (Test-Path $NODE_INSTALL_PATH)) {
+  New-Item -ItemType Directory -Path $NODE_INSTALL_PATH -Force | Out-Null
+}
+$CONFIG = [PSCustomObject]@{}
 if (-not (Test-Path $CONFIG_FILE)) {
   $CONFIG | ConvertTo-Json | Set-Content -Path $CONFIG_FILE -Force
 } else {
   $CONFIG = Get-Content -Path $CONFIG_FILE -Raw | ConvertFrom-Json
-}
-if (-not (Test-Path $NODE_INSTALL_PATH)) {
-  New-Item -ItemType Directory -Path $NODE_INSTALL_PATH -Force | Out-Null
 }
 
 # TYPES
@@ -26,7 +26,7 @@ function Install-NodeVersion {
   )
 
   if (-not $Version) {
-    throw "Version parameter is required. Usage: Install-NodeVersion <version>"
+    throw "Version parameter is required. Usage: psnm install <version>"
   }
 
   if (-not $Version.StartsWith("v")) {
@@ -40,7 +40,7 @@ function Install-NodeVersion {
   $requestedVersions = $nodeVersions | Where-Object { $_.version -like "$Version*" }
 
   if (-not $requestedVersions) {
-    throw "Version $Version not found. To see available versions, run: Get-AvailableNodeVersions"
+    throw "Version $Version not found. To see available versions, run: psnm ls-remote"
   }
 
   # Get the maximum version from the filtered results
@@ -90,7 +90,7 @@ function Set-DefaultNodeVersion {
   )
 
   if (-not $Version) {
-    throw "Version parameter is required. Usage: Set-DefaultNodeVersion <version>"
+    throw "Version parameter is required. Usage: psnm default <version>"
   }
 
   if (-not $Version.StartsWith("v")) {
@@ -99,10 +99,17 @@ function Set-DefaultNodeVersion {
 
   Install-NodeVersion $Version
 
-  $CONFIG.defaultVersion = $Version
+  $CONFIG | Add-Member -NotePropertyName "defaultVersion" -NotePropertyValue $Version -Force
   $CONFIG | ConvertTo-Json | Set-Content -Path $CONFIG_FILE -Force
 
   return "Default Node.js version set to $Version"
+}
+
+function Get-DefaultNodeVersion {
+  if (-not $CONFIG.defaultVersion) {
+    return "No default Node.js version set. Use 'psnm default <version>' to set one."
+  }
+  return $CONFIG.defaultVersion
 }
 
 function Uninstall-NodeVersion {
@@ -112,7 +119,7 @@ function Uninstall-NodeVersion {
   )
 
   if (-not $Version) {
-    throw "Version parameter is required. Usage: Uninstall-NodeVersion <version>"
+    throw "Version parameter is required. Usage: psnm remove <version>"
   }
 
   if (-not $Version.StartsWith("v")) {
@@ -140,8 +147,8 @@ function Get-InstalledNodeVersions {
   $output = "Installed Node.js versions:`n------------------------`n"
   if ($installedVersions.Count -eq 0) {
     $output += "- No Node.js versions are currently installed.`n"
-    $output += "- You can install a version using the command: Install-NodeVersion <version>`n"
-    $output += "- To see available versions, run: Get-AvailableNodeVersions`n"
+    $output += "- You can install a version using the command: psnm install <version>`n"
+    $output += "- To see available versions, run: psnm ls-remote`n"
   } else {
     $output += ($installedVersions | ForEach-Object { $_ }) -join "`n"
   }
@@ -178,7 +185,7 @@ function Use-NodeVersion {
     } elseif (Test-Path $nvmrcFile) {
       $Version = (Get-Content $nvmrcFile | Select-Object -First 1).Trim()
     } else {
-      throw "Version parameter is required for use command. Usage: Use-NodeVersion <version>"
+      throw "Version parameter is required for use command. Usage: psnm use <version>"
     }
   }
 
@@ -191,7 +198,7 @@ function Use-NodeVersion {
   $selectedVersion = $installedVersions | Sort-Object { [version]($_.Name -replace 'v', '') } -Descending | Select-Object -First 1
 
   if (-not $selectedVersion) {
-    throw "Version $Version is not installed. To install it, run: Install-NodeVersion $Version"
+    throw "Version $Version is not installed. To install it, run: psnm install $Version"
   }
 
   # Break the PATH environment variable
@@ -215,3 +222,39 @@ function Use-NodeVersion {
 if ($CONFIG.defaultVersion) {
   Use-NodeVersion $CONFIG.defaultVersion 
 }
+
+function Invoke-PSNM {
+  param (
+    [string]$cmdArg1,
+    [string]$cmdArg2
+  )
+
+  if ($cmdArg1 -eq "help" -or $cmdArg1 -eq "--help") {
+    return "Available commands:`n" +
+           "  ls           List installed Node.js versions`n" +
+           "  ls-remote    List available Node.js versions`n" + 
+           "  install      Install a specific Node.js version`n" +
+           "  remove       Remove a specific Node.js version`n" +
+           "  use          Switch to a specific Node.js version`n" +
+           "  default      Set the default Node.js version`n" +
+           "  help         Show this help message"
+  }
+
+  if ($cmdArg1 -eq "ls-remote") { return Get-AvailableNodeVersions }
+  if ($cmdArg1 -eq "ls") { return Get-InstalledNodeVersions }
+  if ($cmdArg1 -eq "install") { return Install-NodeVersion -Version $cmdArg2 }
+  if ($cmdArg1 -eq "remove") { return Uninstall-NodeVersion -Version $cmdArg2 }
+  if ($cmdArg1 -eq "use") { return Use-NodeVersion -Version $cmdArg2 }
+  if ($cmdArg1 -eq "default") { 
+    if ($cmdArg2) {
+      return Set-DefaultNodeVersion -Version $cmdArg2
+    }
+    return Get-DefaultNodeVersion
+  }
+
+  throw "Error: Command '$cmdArg1' not found. Use 'psnm help' to see the list of available commands."
+}
+
+# Export only the psnm alias
+New-Alias -Name psnm -Value Invoke-PSNM
+Export-ModuleMember -Function Invoke-PSNM -Alias psnm
